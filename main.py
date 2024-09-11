@@ -1,36 +1,33 @@
-from flask import Flask, request, render_template
+import streamlit as st
 import joblib
 import numpy as np
 
-# Inisialisasi Flask app
-app = Flask(__name__)
-
-# Load model
+# Load models
 random_forest_model = joblib.load('models/random_forest_model.pkl')
 gbm_model = joblib.load('models/gbm_model.pkl')
 svm_model = joblib.load('models/svm_model.pkl')
 
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
+# Streamlit UI
+st.title('Machine Learning Model Inference')
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Ambil data dari form
-    feature1 = float(request.form['feature1'])
-    feature2 = float(request.form['feature2'])
-    # Tambahkan fitur lainnya jika diperlukan
+# Input form
+feature1 = st.number_input('Feature 1', format="%.2f")
+feature2 = st.number_input('Feature 2', format="%.2f")
+# Tambahkan input untuk semua fitur yang diperlukan di sini
 
+if st.button('Predict'):
     features = np.array([feature1, feature2])  # Tambahkan semua fitur di sini
 
-    # Lakukan inferensi dengan model
+    # Predict with Random Forest
     rf_pred = random_forest_model.predict([features])[0]
+
+    # Predict with GBM
     gbm_pred = gbm_model.predict([features])[0]
+
+    # Predict with SVM
     svm_pred = svm_model.predict([features])[0]
 
-    # Kembalikan hasil prediksi ke template HTML
-    return render_template('index.html',
-                           prediction=f'Random Forest: {rf_pred}, GBM: {gbm_pred}, SVM: {svm_pred}')
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    # Display results
+    st.write(f'Random Forest Prediction: {rf_pred}')
+    st.write(f'GBM Prediction: {gbm_pred}')
+    st.write(f'SVM Prediction: {svm_pred}')
